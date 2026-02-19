@@ -13,7 +13,7 @@ td.not-in-month:hover {
 
 td {
     text-align: center;
-    width: 25px;
+    width: 32px;
     height: 25px;
     background-color: whitesmoke;
     margin: 1px;
@@ -21,6 +21,19 @@ td {
 
 td:hover, .month-selector:hover {
     cursor: pointer;
-    background-color: yellow;
-    color: goldenrod;
+    background-color: #ADD8E6;
+    color: black;
 }
+
+body {
+    font-family: 'Times New Roman', Times, serif;
+    background-color: #fafafa;
+    color: black;
+}
+
+h1 {
+    font-size: 1.8em;
+    margin-bottom: 20px;
+}
+
+
