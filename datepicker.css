@@ -1,5 +1,6 @@
 table {
     border: black solid 1px;
+    border-collapse: collapse;
 }
 td.not-in-month{
     background-color: transparent;
