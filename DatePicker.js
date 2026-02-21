@@ -1,49 +1,25 @@
 'use strict';
 
 class DatePicker {
+    /* CONSTRUCTOR DatePicker
+    INPUTS:
+    ID - The ID attribute of an existing div.
+    onDateChanged - A callback function, called when the date needs
+    to be changed
+    */
     constructor(id, onDateChanged) {
         this.id = id;
         this.onDateChanged = onDateChanged;
-
+        console.log("Constructed!");
     }
-    getTableCaption()
-    {
-        const month = this.renderDate.toLocaleString('default', {month: 'long'});
-        const calendarTableCaption = document.createElement("caption");
-        const cellText = document.createTextNode(month + " " + this.renderDate.getFullYear());
-        calendarTableCaption.appendChild(cellText);
-        return calendarTableCaption;
-    }
-    getRow(values, rowType)
-    {
-        const row = document.createElement("tr");
-        for (let index = 0; index <  values.length; index++) {
-            const cell = document.createElement(rowType);
-            const cellText = document.createTextNode(values[index].value);
-            cell.appendChild(cellText);
-            if (values[index].active) {
-                const fixedDate = {
-                    month: this.renderDate.getMonth() + 1,
-                    day: values[index].value,
-                    year: this.renderDate.getFullYear()
-                };
-                cell.onclick = () => {this.onDateChanged(this.id, fixedDate);};
-            } else {
-                cell.setAttribute("class", "not-in-month");
-            }
-            row.appendChild(cell);
-        }
-        return row;
-    }
-    static getHeaderRow1Data()
-    {
-        return [{value: "\u2190", active: true},
+    static getHeaderRow1Data() {
+        return  [{value: "<", active: true},
             {value: "\u00A0", active: false},
             {value: "\u00A0", active: false},
             {value: "\u00A0", active: false},
             {value: "\u00A0", active: false},
             {value: "\u00A0", active: false},
-            {value: "\u2192", active: true}];
+            {value: ">", active: true}];
     }
     static getHeaderRow2Data()
     {
@@ -55,12 +31,20 @@ class DatePicker {
             {value: "Fr", active: false},
             {value: "Sa", active: false}];
     }
-    getTableHeader()
+    getTableCaption()
     {
+        const month = this.renderDate.toLocaleString('default', {month: 'long'});
+        const calTableCaption = document.createElement("caption");
+        const cellText = document.createTextNode(month + " " + this.renderDate.getFullYear());
+        calTableCaption.appendChild(cellText);
+        console.log("Caption created and returned!");
+        return calTableCaption;
+    }
+    getTableHeader() {
         const date = this.renderDate;
-        const calendarTableHeader = document.createElement("thead");
-        const headerRow = this.getRow(DatePicker.getHeaderRow1Data(), "th");
-        headerRow.children[0].setAttribute("class", "month-selector");
+        const tableHeader = document.createElement("thead");
+        const headerRow = this.translateRow(DatePicker.getHeaderRow1Data(), "th");
+        headerRow.children[0].setAttribute("class","month-selector");
         headerRow.children[0].onclick = () => {
             date.setMonth(date.getMonth() - 1);
             this.render(date);
@@ -70,40 +54,69 @@ class DatePicker {
             date.setMonth(date.getMonth() + 1);
             this.render(date);
         };
-        calendarTableHeader.appendChild(headerRow);
-        calendarTableHeader.appendChild(this.getRow(DatePicker.getHeaderRow2Data(), "th"));
-        return calendarTableHeader;
+        console.log("Created Header Attribute!");
+        tableHeader.appendChild(headerRow);
+        tableHeader.appendChild(this.translateRow(DatePicker.getHeaderRow2Data(),"th"));
+        console.log("Appended both headers!");
+        return tableHeader;
     }
-    getTableBody()
-    {
-        const month = this.renderDate.getMonth();
-        const gridDays = new Date(this.renderDate.getFullYear(), this.renderDate.getMonth(), 1);
-        gridDays.setDate(gridDays.getDate() - gridDays.getDay());
-        const calendarTableBody = document.createElement("tbody");
-        for (let i = 0; i < 7; i++) {
-            if (i > 4 && gridDays.getMonth() !== month) {
+
+    /*
+    Has to create the calendar with all the rows.
+    */
+    createCalendar() {
+        const selectedMonth = this.renderDate.getMonth();
+        const dateIterator = new Date(this.renderDate.getFullYear(), this.renderDate.getMonth(), 1);
+        dateIterator.setDate(dateIterator.getDate() - dateIterator.getDay());
+        const calendarTable = document.createElement("tbody");
+        // Going through the month.
+        for(let i = 0; i < 7; i++) {
+            //Taken from sample solution.
+            // This breaks the calendar creation loop when the gridDay month
+            // no longer matches the selected month of the calendar.
+            if(i > 4 && dateIterator.getMonth() !== selectedMonth) {
                 break;
             }
-            const rowData = [];
+            const appendRowData = [];
             for (let j = 0; j < 7; j++) {
-                rowData.push({
-                    value: gridDays.getDate(),
-                    active: gridDays.getMonth() === month
+                appendRowData.push({
+                    value: dateIterator.getDate(),
+                    active: dateIterator.getMonth() === selectedMonth
                 });
-                gridDays.setDate(gridDays.getDate() + 1);
+                dateIterator.setDate(dateIterator.getDate() + 1);
             }
-            const row = this.getRow(rowData, "td");
-            calendarTableBody.appendChild(row);
+            const row = this.translateRow(appendRowData,"td");
+            calendarTable.appendChild(row);
         }
-        return calendarTableBody;
-    }
-    getTable()
-    {
-        const calendarTable = document.createElement("table");
-        calendarTable.appendChild(this.getTableCaption());
-        calendarTable.appendChild(this.getTableHeader());
-        calendarTable.appendChild(this.getTableBody());
         return calendarTable;
+    }
+    translateRow(rowValues,typeRow) 
+    {
+        const rowElement = document.createElement("tr");
+        for (let index = 0; index < rowValues.length; index++) {
+            const rowCell = document.createElement(typeRow);
+            const rowCellTest = document.createTextNode(rowValues[index].value);
+            rowCell.appendChild(rowCellTest);
+            if (rowValues[index].active) {
+                const fixedDate = {
+                    month: this.renderDate.getMonth() + 1,
+                    day: rowValues[index].value,
+                    year: this.renderDate.getFullYear()
+                };
+                rowCell.onclick = () => {this.onDateChanged(this.id, fixedDate);};
+            } else {
+                rowCell.setAttribute("class", "not-in-month");
+            }
+            rowElement.appendChild(rowCell);
+        }
+        return rowElement;
+    }
+    getTable() {
+        const calTable = document.createElement("table");
+        calTable.append(this.getTableCaption());
+        calTable.append(this.getTableHeader());
+        calTable.append(this.createCalendar());
+        return calTable;
     }
     render(date) {
         this.renderDate = date;
